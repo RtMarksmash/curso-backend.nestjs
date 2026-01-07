@@ -1,4 +1,4 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, Post, Delete, Body } from '@nestjs/common';
 
 interface User {
   id: string;
@@ -22,7 +22,29 @@ export class UsersController {
 
   @Get(':id')
   getUserById(@Param('id') id: string) {
-    return this.users.find((user) => user.id === id);
+    const user = this.users.find((user) => user.id === id);
+    if (!user) {
+      return { message: 'User not found' };
+    }
+    return user;
+  }
+
+  @Post('')
+  createUser(@Body() newUser: User) {
+    this.users.push(newUser);
+    return newUser;
+  }
+
+  @Delete(':id')
+  deleteUser(@Param('id') id: string) {
+    const position = this.users.findIndex((user) => user.id === id);
+    if (position === -1) {
+      return { message: 'User not found' };
+    }
+    this.users.splice(position, 1);
+    return {
+      message: 'User deleted'
+    };
   }
 
 }
