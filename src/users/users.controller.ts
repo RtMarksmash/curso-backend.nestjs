@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Post, Delete, Body, Put } from '@nestjs/common';
+import { Controller, Get, Param, Post, Delete, Body, Put, NotFoundException, UnprocessableEntityException, ForbiddenException } from '@nestjs/common';
 
 interface User {
   id: string;
@@ -24,7 +24,10 @@ export class UsersController {
   getUserById(@Param('id') id: string) {
     const user = this.users.find((user) => user.id === id);
     if (!user) {
-      return { message: 'User not found' };
+      throw new NotFoundException('User not found');
+    }
+    if (user.id === '1') {
+      throw new ForbiddenException('Access denied');
     }
     return user;
   }
@@ -43,7 +46,7 @@ export class UsersController {
   deleteUser(@Param('id') id: string) {
     const position = this.users.findIndex((user) => user.id === id);
     if (position === -1) {
-      return { message: 'User not found' };
+      throw new NotFoundException('User not found');
     }
     this.users.splice(position, 1);
     return {
@@ -55,9 +58,13 @@ export class UsersController {
   updateUser(@Param('id') id: string, @Body() changes : User) {
     const position = this.users.findIndex((user) => user.id === id);
     if (position === -1) {
-      return { message: 'User not found' };
+      throw new NotFoundException('User not found');
     }
     const currentData = this.users[position];
+    const email = changes?.email;
+    if (email && email.includes('@')) {
+      throw new UnprocessableEntityException('Invalid email');
+    }
     const updatedUser = { ...currentData, ...changes };
     this.users[position] = updatedUser;
     return updatedUser;
