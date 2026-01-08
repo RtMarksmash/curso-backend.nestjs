@@ -1,5 +1,5 @@
 import { Controller, Get, Param, Post, Delete, Body, Put, NotFoundException, UnprocessableEntityException, ForbiddenException } from '@nestjs/common';
-
+import { CreateUserDto } from './user.dto';
 interface User {
   id: string;
   name: string;
@@ -8,7 +8,6 @@ interface User {
 
 @Controller('users')
 export class UsersController {
-
   private users: User[] = [
     { id: '1', name: 'Alice', email: 'alice@example.com' },
     { id: '2', name: 'Bob', email: 'bob@example.com' },
@@ -33,7 +32,7 @@ export class UsersController {
   }
 
   @Post('')
-  createUser(@Body() body: User) {
+  createUser(@Body() body: CreateUserDto) {
     const newUser = {
       ...body,
       id: `${new Date().getTime()}`,
@@ -55,7 +54,7 @@ export class UsersController {
   }
 
   @Put(':id')
-  updateUser(@Param('id') id: string, @Body() changes : User) {
+  updateUser(@Param('id') id: string, @Body() changes: User) {
     const position = this.users.findIndex((user) => user.id === id);
     if (position === -1) {
       throw new NotFoundException('User not found');
@@ -69,5 +68,4 @@ export class UsersController {
     this.users[position] = updatedUser;
     return updatedUser;
   }
-
 }
