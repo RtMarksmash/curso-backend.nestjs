@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
-import { CreateUserDto, UpdateUserDto } from './user.dto';
+import { CreateUserDto, UpdateUserDto } from './dto/user.dto';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entitites/user.entity';
@@ -12,7 +12,9 @@ export class UsersService {
   ) {}
 
   async findAll() {
-    return await this.usersRepository.find();
+    return await this.usersRepository.find({
+      relations: ['profile'],
+    });
   }
 
   async getUserById(id: number) {
@@ -21,6 +23,22 @@ export class UsersService {
       throw new ForbiddenException('Access denied');
     }
     return user;
+  }
+
+  async getProfileByUserId(id: number) {
+    const user = await this.findOne(id);
+    return user.profile;
+  }
+
+  async getPostsByUserId(id: number) {
+    const user = await this.usersRepository.findOne({
+      where: { id },
+      relations: ['posts'],
+    });
+    if (!user) {
+      throw new NotFoundException(`User with id ${id} not found`);
+    }
+    return user.posts;
   }
 
   async create(body: CreateUserDto) {
@@ -33,21 +51,28 @@ export class UsersService {
   }
 
   async update(changes: UpdateUserDto, id: number) {
-    const user = await this.findOne(id);
-    const updatedUser = this.usersRepository.merge(user, changes);
-    return this.usersRepository.save(updatedUser);
+    try {
+      const user = await this.findOne(id);
+      const updatedUser = this.usersRepository.merge(user, changes);
+      const saveUSer = await this.usersRepository.save(updatedUser);
+      return saveUSer;
+    } catch {
+      throw new BadRequestException('Error updating user');
+    }
   }
 
   async delete(id: number) {
-    const user = await this.findOne(id);
-    await this.usersRepository.delete(user.id);
-    return {
-      message: 'User deleted',
-    };
+    try {
+      const user = await this.findOne(id);
+      await this.usersRepository.delete(user.id);
+      return { message: 'User deleted' };
+    } catch {
+      throw new BadRequestException('Error deleting user');
+    }
   }
 
   private async findOne(id: number) {
-    const user = await this.usersRepository.findOneBy({ id });
+    const user = await this.usersRepository.findOne({ where: { id }, relations: ['profile'] });
     if (!user) {
       throw new NotFoundException(`User with id ${id} not found`);
     }
