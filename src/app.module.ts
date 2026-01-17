@@ -19,7 +19,7 @@ import { PostsModule } from './posts/posts.module';
         password: ConfigService.get('POSTGRES_PASSWORD', { infer: true }),
         database: ConfigService.get('POSTGRES_DB', { infer: true }),
         autoLoadEntities: true,
-        synchronize: true,
+        synchronize: false,
       }),
       inject: [ConfigService],
     }),
