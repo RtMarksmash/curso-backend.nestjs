@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Put, Param, Delete, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Param, Delete, UseGuards, Req, ParseIntPipe } from '@nestjs/common';
 import { PostsService } from '../services/posts.service';
 import { CreatePostDto } from '../dto/create-post.dto';
 import { UpdatePostDto } from '../dto/update-post.dto';
@@ -32,6 +32,14 @@ export class PostsController {
   @Put(':id')
   update(@Param('id') id: string, @Body() updatePostDto: UpdatePostDto) {
     return this.postsService.update(+id, updatePostDto);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Put(':id/publish')
+  publish(@Param('id', ParseIntPipe) id: number, @Req() req: Request) {
+    const payload = req.user as Payload;
+    const userId = payload.sub;
+    return this.postsService.publish(id, userId);
   }
 
   @UseGuards(AuthGuard('jwt'))
