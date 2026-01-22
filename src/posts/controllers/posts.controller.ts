@@ -3,7 +3,7 @@ import { PostsService } from '../services/posts.service';
 import { CreatePostDto } from '../dto/create-post.dto';
 import { UpdatePostDto } from '../dto/update-post.dto';
 import { AuthGuard } from '@nestjs/passport';
-import { Request } from 'express';
+import type { Request } from 'express';
 import { Payload } from 'src/auth/models/payload.model';
 import { Post as PostEntity } from '../entities/post.entity';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
